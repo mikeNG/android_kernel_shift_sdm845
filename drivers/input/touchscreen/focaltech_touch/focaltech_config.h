@@ -155,7 +155,7 @@
  * Gesture function enable
  * default: disable
  */
-#define FTS_GESTURE_EN                          0
+#define FTS_GESTURE_EN                          1
 
 /*
  * ESD check & protection
@@ -214,7 +214,7 @@
  * You should rename fw to "focaltech_ts_fw_tianma", and push it into
  * etc/firmware or by customers
  */
-#define FTS_MODULE_NAME                        "gvo"
+#define FTS_MODULE_NAME                        ""
 #define FTS_MODULE2_NAME                       ""
 #define FTS_MODULE3_NAME                       ""
 
@@ -223,7 +223,7 @@
  * define your own fw_file, the sample one to be replaced is invalid
  * NOTE: if FTS_GET_MODULE_NUM > 1, it's the fw corresponding with FTS_VENDOR_ID
  */
-#define FTS_UPGRADE_FW_FILE                    "include/firmware/fw_sample.i"
+#define FTS_UPGRADE_FW_FILE                    "include/firmware/FT3518_Ref_firmware.i"
 
 /*
  * if FTS_GET_MODULE_NUM >= 2, fw corrsponding with FTS_VENDOR_ID2
