@@ -16,6 +16,37 @@
 
 #define MAX_READ_SIZE  0x7FFFF
 
+#define ARCSOFT_EEPROM_BIN
+
+#ifdef ARCSOFT_EEPROM_BIN
+#include <linux/fs.h>
+
+static char arcsoftbuf[2048] = {};
+
+int arcsoft_bin(void)
+{
+	struct file *fp;
+	mm_segment_t fs;
+	loff_t pos;
+	printk("arcsoft_bin enter\n");
+
+	fp = filp_open("/data/vendor/camera/arcsoft.bin", O_RDWR | O_CREAT, 0644);
+	if (IS_ERR(fp)) {
+		printk("arcsoft_bin create file error\n");
+		return -1;
+	}
+	fs = get_fs();
+	set_fs(KERNEL_DS);
+	pos = 0;
+	printk("arcsoft_bin enter-->start write\n");
+	vfs_write(fp, arcsoftbuf, sizeof(arcsoftbuf), &pos);
+	printk("arcsoft_bin enter-->stop write\n");
+	filp_close(fp, NULL);
+	set_fs(fs);
+	return 0;
+}
+#endif
+
 /**
  * cam_eeprom_read_memory() - read map data into buffer
  * @e_ctrl:     eeprom control struct
@@ -39,6 +70,10 @@ static int cam_eeprom_read_memory(struct cam_eeprom_ctrl_t *e_ctrl,
 		CAM_ERR(CAM_EEPROM, "e_ctrl is NULL");
 		return -EINVAL;
 	}
+
+#ifdef ARCSOFT_EEPROM_BIN
+	arcsoft_bin();
+#endif
 
 	eb_info = (struct cam_eeprom_soc_private *)e_ctrl->soc_info.soc_private;
 
@@ -1128,6 +1163,10 @@ static int32_t cam_eeprom_get_cal_data(struct cam_eeprom_ctrl_t *e_ctrl,
 				e_ctrl->cal_data.num_data);
 			memcpy(read_buffer, e_ctrl->cal_data.mapdata,
 					e_ctrl->cal_data.num_data);
+#ifdef ARCSOFT_EEPROM_BIN
+			if (e_ctrl->cal_data.num_data == 5113)
+				memcpy(arcsoftbuf, read_buffer + 0x0BE3, 2048);
+#endif
 			cam_mem_put_cpu_buf(io_cfg->mem_handle[0]);
 		} else {
 			CAM_ERR(CAM_EEPROM, "Invalid direction");
