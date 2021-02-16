@@ -9,6 +9,14 @@ dtb-$(CONFIG_ARCH_QCOM)	+= msm8994-angler-rev-101.dtb
 dtb-$(CONFIG_ARCH_QCOM)	+= msm8996-mtp.dtb
 endif
 
+ifeq ($(CONFIG_SHIFT_PROJECT),y)
+	ifeq ($(CONFIG_BUILD_ARM64_DT_OVERLAY),y)
+		dtbo-$(CONFIG_ARCH_SDM845) += \
+			axolotl.dtbo \
+
+		axolotl.dtbo-base := sdm845-v2.1.dtb
+	endif
+else
 ifeq ($(CONFIG_BUILD_ARM64_DT_OVERLAY),y)
 dtbo-$(CONFIG_ARCH_QCOM) += \
 	sdm845-mtp-overlay.dtbo \
@@ -30,6 +38,7 @@ dtb-$(CONFIG_ARCH_QCOM)	+= sdm845-qrd.dtb
 dtb-$(CONFIG_ARCH_QCOM)	+= sdm845-v2-mtp.dtb
 dtb-$(CONFIG_ARCH_QCOM)	+= sdm845-v2-qrd.dtb
 dtb-$(CONFIG_ARCH_QCOM)	+= sdm845-v2.1-mtp.dtb
+endif
 endif
 
 always		:= $(dtb-y)
