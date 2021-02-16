@@ -197,7 +197,7 @@ static bool get_flow_cnt(struct fts_ts_data *ts_data)
 		fts_esdcheck_data.flow_work_cnt_last = reg_value;
 	}
 
-		/* Flow Work Cnt keep a value for 5 times, need execute TP reset */
+	/* Flow Work Cnt keep a value for 5 times, need execute TP reset */
 	if (fts_esdcheck_data.flow_work_hold_cnt >= 5) {
 		FTS_DEBUG("reg0x91 keep a value for 5 times, need execute TP reset");
 		return true;

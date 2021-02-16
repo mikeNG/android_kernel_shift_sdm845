@@ -222,7 +222,7 @@ static int fts_get_chip_types(
 			if (((id_h == ctype[i].rom_idh) && (id_l == ctype[i].rom_idl))
 				|| ((id_h == ctype[i].pb_idh) && (id_l == ctype[i].pb_idl))
 				|| ((id_h == ctype[i].bl_idh) && (id_l == ctype[i].bl_idl)))
-			break;
+				break;
 		}
 	}
 
@@ -295,9 +295,9 @@ static int fts_get_ic_information(struct fts_ts_data *ts_data)
 			ret = fts_get_chip_types(ts_data, chip_id[0], chip_id[1], VALID);
 			if (!ret)
 				break;
-            else
-                FTS_DEBUG("TP not ready, read:0x%02x%02x",
-                          chip_id[0], chip_id[1]);
+			else
+				FTS_DEBUG("TP not ready, read:0x%02x%02x",
+					  chip_id[0], chip_id[1]);
 		}
 
 		cnt++;
@@ -486,9 +486,9 @@ static int fts_input_report_b(struct fts_ts_data *data)
 				if (data->log_level >= 1) {
 					FTS_DEBUG("[B]P%d UP!", i);
 				}
-			va_reported = true;
-			input_mt_slot(data->input_dev, i);
-			input_mt_report_slot_state(data->input_dev, MT_TOOL_FINGER, false);
+				va_reported = true;
+				input_mt_slot(data->input_dev, i);
+				input_mt_report_slot_state(data->input_dev, MT_TOOL_FINGER, false);
 			}
 		}
 	}
@@ -586,7 +586,7 @@ static int fts_read_touchdata(struct fts_ts_data *data)
 
 	if (data->gesture_mode) {
 		if (0 == fts_gesture_readdata(data, NULL)) {
-			FTS_INFO("succuss to get gesture data in irq handler");
+			FTS_DEBUG("succuss to get gesture data in irq handler");
 			return 1;
 		}
 	}
@@ -633,7 +633,7 @@ static int fts_read_parse_touchdata(struct fts_ts_data *data)
 	}
 
 	if (data->point_num > max_touch_num) {
-		FTS_INFO("invalid point_num(%d)", data->point_num);
+		FTS_DEBUG("invalid point_num(%d)", data->point_num);
 		return -EIO;
 	}
 

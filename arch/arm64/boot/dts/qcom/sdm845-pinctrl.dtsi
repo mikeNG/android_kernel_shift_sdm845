@@ -851,12 +851,12 @@
 		pmx_ts_int_active {
 			ts_int_active: ts_int_active {
 				mux {
-					pins = "gpio122";
+					pins = "gpio125";
 					function = "gpio";
 				};
 
 				config {
-					pins = "gpio122";
+					pins = "gpio125";
 					drive-strength = <8>;
 					bias-pull-up;
 				};
@@ -864,14 +864,14 @@
 		};
 
 		pmx_ts_int_suspend {
-			ts_int_suspend1: ts_int_suspend1 {
+			ts_int_suspend: ts_int_suspend {
 				mux {
-					pins = "gpio122";
+					pins = "gpio125";
 					function = "gpio";
 				};
 
 				config {
-					pins = "gpio122";
+					pins = "gpio125";
 					drive-strength = <2>;
 					bias-pull-down;
 				};
@@ -894,7 +894,7 @@
 		};
 
 		pmx_ts_reset_suspend {
-			ts_reset_suspend1: ts_reset_suspend1 {
+			ts_reset_suspend: ts_reset_suspend {
 				mux {
 					pins = "gpio99";
 					function = "gpio";
@@ -911,12 +911,12 @@
 		pmx_ts_release {
 			ts_release: ts_release {
 				mux {
-					pins = "gpio122", "gpio99";
+					pins = "gpio125", "gpio99";
 					function = "gpio";
 				};
 
 				config {
-					pins = "gpio122", "gpio99";
+					pins = "gpio125", "gpio99";
 					drive-strength = <2>;
 					bias-pull-down;
 				};
@@ -924,6 +924,7 @@
 		};
 
 		ts_mux {
+			/*
 			ts_active: ts_active {
 				mux {
 					pins = "gpio99", "gpio122";
@@ -962,6 +963,7 @@
 					bias-disable;
 				};
 			};
+			*/
 		};
 
 		ext_bridge_mux {
@@ -2279,6 +2281,7 @@
 			};
 		};
 
+		/*
 		qupv3_se5_spi_pins: qupv3_se5_spi_pins {
 			qupv3_se5_spi_active: qupv3_se5_spi_active {
 				mux {
@@ -2310,6 +2313,7 @@
 				};
 			};
 		};
+		*/
 
 		/* SE 6 pin mappings */
 		qupv3_se6_i2c_pins: qupv3_se6_i2c_pins {

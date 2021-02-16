@@ -1485,13 +1485,13 @@ static int fts_param_need_upgrade(struct fts_upgrade *upg)
 		ret = fts_param_get_ver_in_host(upg, &ver_in_host);
 		if (ret < 0) {
 			FTS_ERROR("param version in host invalid");
-		return ret;
+			return ret;
 		}
 
 		ret = fts_param_get_ver_in_tp(&ver_in_tp);
 		if (ret < 0) {
 			FTS_ERROR("get IDE param ver in tp fail");
-		return ret;
+			return ret;
 		}
 
 		FTS_INFO("fw paramcfg version in tp:%x, host:%x",

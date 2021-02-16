@@ -32,12 +32,12 @@
 /*****************************************************************************
 * 1.Included header files
 *****************************************************************************/
+#include <linux/uaccess.h>
 #include "focaltech_core.h"
 
 /******************************************************************************
 * Private constant and macro definitions using #define
 *****************************************************************************/
-#define KEY_GESTURE_U                           KEY_U
 #define KEY_GESTURE_UP                          KEY_UP
 #define KEY_GESTURE_DOWN                        KEY_DOWN
 #define KEY_GESTURE_LEFT                        KEY_LEFT
@@ -64,8 +64,10 @@
 #define GESTURE_L                               0x44
 #define GESTURE_S                               0x46
 #define GESTURE_V                               0x54
-#define GESTURE_Z                               0x41
+#define GESTURE_Z                               0x65
 #define GESTURE_C                               0x34
+
+#define PAGESIZE 512
 
 /*****************************************************************************
 * Private enumerations, structures and unions using typedef
@@ -95,6 +97,7 @@ static struct fts_gesture_st fts_gesture_data;
 /*****************************************************************************
 * Global variable or extern global variabls/functions
 *****************************************************************************/
+uint32_t gestures_enabled;
 
 /*****************************************************************************
 * Static function prototypes
@@ -231,8 +234,7 @@ static void fts_gesture_report(struct input_dev *input_dev, int gesture_id)
 		break;
 
 	case GESTURE_DOUBLECLICK:
-		gesture = KEY_POWER;
-
+		gesture = KEY_WAKEUP;
 		break;
 
 	case GESTURE_O:
@@ -313,12 +315,15 @@ int fts_gesture_readdata(struct fts_ts_data *ts_data, u8 *data)
 		return 1;
 	}
 
+	msleep(40);
 
 	ret = fts_read_reg(FTS_REG_GESTURE_EN, &buf[0]);
 	if ((ret < 0) || (buf[0] != ENABLE)) {
 		FTS_DEBUG("gesture not enable in fw, don't process gesture");
 		return 1;
 	}
+
+	msleep(20);
 
 	buf[2] = FTS_REG_GESTURE_OUTPUT_ADDRESS;
 	ret = fts_read(&buf[2], 1, &buf[2], FTS_GESTURE_DATA_LEN - 2);
@@ -327,13 +332,19 @@ int fts_gesture_readdata(struct fts_ts_data *ts_data, u8 *data)
 		return ret;
 	}
 
-	/* init variable before read gesture point */
-	memset(gesture->coordinate_x, 0, FTS_GESTURE_POINTS_MAX * sizeof(u16));
-	memset(gesture->coordinate_y, 0, FTS_GESTURE_POINTS_MAX * sizeof(u16));
 	gesture->gesture_id = buf[2];
 	gesture->point_num = buf[3];
 	FTS_DEBUG("gesture_id=%d, point_num=%d",
 		gesture->gesture_id, gesture->point_num);
+
+	if ((gesture->gesture_id & gestures_enabled) == 0) {
+		FTS_DEBUG("gesture is not enabled, not processing gesture");
+		return 1;
+	}
+
+	/* init variable before read gesture point */
+	memset(gesture->coordinate_x, 0, FTS_GESTURE_POINTS_MAX * sizeof(u16));
+	memset(gesture->coordinate_y, 0, FTS_GESTURE_POINTS_MAX * sizeof(u16));
 
 	/* save point data,max:6 */
 	for (i = 0; i < FTS_GESTURE_POINTS_MAX; i++) {
@@ -423,13 +434,78 @@ int fts_gesture_resume(struct fts_ts_data *ts_data)
 	return 0;
 }
 
+#define GESTURE_ATTR(name, flag)\
+	static ssize_t name##_enable_read_func(struct file *file, char __user *user_buf, size_t count, loff_t *ppos)\
+	{\
+		int ret = 0;\
+		char page[PAGESIZE];\
+		ret = sprintf(page, "%d\n", (gestures_enabled & flag) != 0);\
+		ret = simple_read_from_buffer(user_buf, count, ppos, page, strlen(page));\
+		return ret;\
+	}\
+	static ssize_t name##_enable_write_func(struct file *file, const char __user *user_buf, size_t count, loff_t *ppos)\
+	{\
+		int ret, write_flag = 0;\
+		char page[PAGESIZE] = {0};\
+		ret = copy_from_user(page, user_buf, count);\
+		ret = sscanf(page, "%d", &write_flag);\
+		if (write_flag) {\
+			gestures_enabled |= flag;\
+		} else {\
+			gestures_enabled &= ~flag;\
+		}\
+		return count;\
+	}\
+	static const struct file_operations name##_enable_proc_fops = {\
+		.write = name##_enable_write_func,\
+		.read =  name##_enable_read_func,\
+		.open = simple_open,\
+		.owner = THIS_MODULE,\
+	};
+
+GESTURE_ATTR(double_tap, GESTURE_DOUBLECLICK);
+
+#undef GESTURE_ATTR
+
+#define CREATE_PROC_NODE(PARENT, NAME, MODE)\
+	node = proc_create(#NAME, MODE, PARENT, &NAME##_proc_fops);\
+	if (node == NULL) {\
+		ret = -ENOMEM;\
+		FTS_ERROR("Couldn't create " #NAME " in " #PARENT "\n");\
+	}
+
+#define CREATE_GESTURE_NODE(NAME)\
+	CREATE_PROC_NODE(touchpanel, NAME##_enable, 0666)
+
+static int fts_gesture_proc_init(void) {
+	int ret = 0;
+	struct proc_dir_entry *node = NULL;
+	struct proc_dir_entry *touchpanel = NULL;
+
+	touchpanel = proc_mkdir("touchpanel", NULL);
+	if (touchpanel == NULL) {
+		ret = -ENOMEM;
+		FTS_ERROR("Couldn't create touchpanel proc directory\n");
+	}
+
+	CREATE_GESTURE_NODE(double_tap);
+
+	return ret;
+}
+
+#undef CREATE_GESTURE_NODE
+#undef CREATE_PROC_NODE
+
 int fts_gesture_init(struct fts_ts_data *ts_data)
 {
 	struct input_dev *input_dev = ts_data->input_dev;
 
 	FTS_FUNC_ENTER();
-	input_set_capability(input_dev, EV_KEY, KEY_POWER);
-	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_U);
+
+	// enable double tap gesture by default
+	gestures_enabled = GESTURE_DOUBLECLICK;
+
+	input_set_capability(input_dev, EV_KEY, KEY_WAKEUP);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_UP);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_DOWN);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_LEFT);
@@ -444,11 +520,11 @@ int fts_gesture_init(struct fts_ts_data *ts_data)
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_Z);
 	input_set_capability(input_dev, EV_KEY, KEY_GESTURE_C);
 
+	__set_bit(KEY_WAKEUP, input_dev->keybit);
 	__set_bit(KEY_GESTURE_RIGHT, input_dev->keybit);
 	__set_bit(KEY_GESTURE_LEFT, input_dev->keybit);
 	__set_bit(KEY_GESTURE_UP, input_dev->keybit);
 	__set_bit(KEY_GESTURE_DOWN, input_dev->keybit);
-	__set_bit(KEY_GESTURE_U, input_dev->keybit);
 	__set_bit(KEY_GESTURE_O, input_dev->keybit);
 	__set_bit(KEY_GESTURE_E, input_dev->keybit);
 	__set_bit(KEY_GESTURE_M, input_dev->keybit);
@@ -463,6 +539,8 @@ int fts_gesture_init(struct fts_ts_data *ts_data)
 
 	memset(&fts_gesture_data, 0, sizeof(struct fts_gesture_st));
 	ts_data->gesture_mode = FTS_GESTURE_EN;
+
+	fts_gesture_proc_init();
 
 	FTS_FUNC_EXIT();
 	return 0;
