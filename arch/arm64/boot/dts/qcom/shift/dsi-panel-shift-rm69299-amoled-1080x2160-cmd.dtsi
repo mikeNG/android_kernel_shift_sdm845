@@ -4,9 +4,11 @@
  */
 
 &mdss_mdp {
-	dsi_shift6mq_rm69299_1080p_cmd: qcom,mdss_dsi_shift6mq_rm69299_1080p_cmd {
+	dsi_shift6mq_rm69299_1080p_cmd: dsi_shift6mq_rm69299_1080p_cmd_display {
 		qcom,mdss-dsi-panel-name = "shift6mq rm69299 1080p cmd";
 		qcom,mdss-dsi-panel-type = "dsi_cmd_mode";
+		qcom,dsi-ctrl-num = <0>;
+		qcom,dsi-phy-num = <0>;
 		qcom,mdss-dsi-virtual-channel-id = <0>;
 		qcom,mdss-dsi-stream = <0>;
 		qcom,mdss-dsi-bpp = <24>;
