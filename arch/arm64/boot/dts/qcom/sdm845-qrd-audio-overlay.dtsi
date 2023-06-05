@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
+ */
+
+#include "sdm845-audio-overlay.dtsi"
+
+&snd_934x {
+	qcom,model = "sdm845-tavil-qrd-snd-card";
+
+	qcom,wsa-max-devs = <1>;
+	qcom,wsa-devs = <&wsa881x_0211>, <&wsa881x_0213>;
+	qcom,wsa-aux-dev-prefix = "SpkrRight", "SpkrRight";
+
+	qcom,msm-mbhc-usbc-audio-supported = <1>;
+
+	qcom,usbc-analog-en2-gpio = <&tlmm 51 0>;
+	pinctrl-names = "aud_active", "aud_sleep";
+	pinctrl-0 = <&wcd_usbc_analog_en2_active>;
+	pinctrl-1 = <&wcd_usbc_analog_en2_idle>;
+};
+
+&us_euro_sw_wcd_active {
+	mux {
+		pins = "gpio1";
+	};
+
+	config {
+		pins = "gpio1";
+		/delete-property/ output-high;
+		bias-high-impedance;
+	};
+};
+
+&us_euro_sw_wcd_sleep {
+	mux {
+		pins = "gpio1";
+	};
+
+	config {
+		pins = "gpio1";
+		/delete-property/ output-low;
+		bias-high-impedance;
+	};
+};
+
+&wcd934x_cdc {
+	swr_master {
+		wsa881x@20170211 {
+			compatible = "qcom,wsa881x";
+			reg = <0x00 0x20170211>;
+			qcom,spkr-sd-n-node = <&wsa_spkr_wcd_sd2>;
+		};
+
+		wsa881x@21170213 {
+			compatible = "qcom,wsa881x";
+			reg = <0x00 0x21170213>;
+			qcom,spkr-sd-n-node = <&wsa_spkr_wcd_sd2>;
+		};
+	};
+};
