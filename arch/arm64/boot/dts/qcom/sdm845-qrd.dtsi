@@ -203,10 +203,6 @@
 	qcom,mdss-dsi-panel-orientation = "180";
 };
 
-&dsi_nt35597_truly_dsc_cmd_display {
-	qcom,dsi-display-active;
-};
-
 &wil6210 {
 	status = "ok";
 };
